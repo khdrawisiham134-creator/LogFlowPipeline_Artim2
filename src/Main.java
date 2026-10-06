@@ -4,18 +4,35 @@ import java.io.BufferedReader;
 import java.io.StringReader;
 
 public class Main {
+
     public static void main(String[] args) {
-        String inputData = "Hello from Pipeline Core!\nThis is a test line.\nProject is running successfully.";
 
-        BufferedReader reader = new BufferedReader(new StringReader(inputData));
+        String inputData =
+                "127.0.0.1 - - [06/Oct/2026:18:00:00 +0300] \"GET /index.html HTTP/1.1\" 200 123 \"Mozilla/5.0\"\n"
+                        + "192.168.1.10 - - [06/Oct/2026:18:01:00 +0300] \"POST /login HTTP/1.1\" 404 50 \"Chrome\"\n";
 
-        Source<Record> source = new FileLineSource(reader);
-        Sink<Record> sink = new ConsoleSink();
+        BufferedReader reader =
+                new BufferedReader(new StringReader(inputData));
 
-        Pipeline pipeline = new Pipeline(source, sink);
+        Source<Record> source =
+                new FileLineSource(reader);
+
+        ParserStage parser =
+                new ParserStage();
+
+        ConsoleSink sink =
+                new ConsoleSink();
+
+        Pipeline pipeline =
+                new Pipeline(source, parser, sink);
 
         try {
             pipeline.run();
+
+            System.out.println(
+                    "Invalid lines: " + parser.getInvalidCount()
+            );
+
         } catch (StageException e) {
             e.printStackTrace();
         }
